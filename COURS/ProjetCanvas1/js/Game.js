@@ -69,29 +69,43 @@ export default class Game {
         requestAnimationFrame(this.mainAnimationLoop.bind(this));
     }
 
-    x = 100;
+    x = 200;
+    direction = true;
+
+    l = 20;
+    langue = true;
     mainAnimationLoop() {
         // 1 - on efface le canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // 2 - on dessine les objets à animer dans le jeu
-        // ici on dessine le monstre
-        this.drawMonstre(this.x, 100);
+        // ici on dessine le monstre   
+        this.drawMonstre(this.x, 250);
 
         // 3 - On regarde l'état du clavier, manette, souris et on met à jour
         // l'état des objets du jeu en conséquence
         //this.update();
+        //this.updateLangue();
 
         // 4 - on demande au navigateur d'appeler la fonction mainAnimationLoop
         // à nouveau dans 1/60 de seconde
         requestAnimationFrame(this.mainAnimationLoop.bind(this));
     }
 
+    vitesse = 1;
     update() {
-        this.x += 10;
-        if (this.x > this.canvas.width) {
-            this.x = 0;
+        if(this.x >= 600 || this.x < 100) {
+            this.direction = !this.direction;
+        }  
+        this.x = this.direction ? this.x + this.vitesse : this.x - this.vitesse;
+    }
+
+    vlangue = 1;
+    updateLangue() {
+        if(this.l >= 100 || this.l <= 10) {
+            this.langue = !this.langue;
         }
+        this.l = this.langue ? this.l + this.vlangue : this.l - this.vlangue;
     }
 
     drawCircleImmediat(x, y, r, color) {
@@ -161,29 +175,79 @@ export default class Game {
         //this.ctx.scale(0.5, 0.5);
 
         // tete du monstre
-        this.ctx.fillStyle = "pink";
+        this.ctx.fillStyle = "brown";
         this.ctx.fillRect(0, 0, 100, 100);
+        
         // yeux
-        this.drawCircleImmediat(20, 20, 10, "red");
-        this.drawCircleImmediat(60, 20, 10, "red");
+        this.drawYeux();
 
         // Les bras
+        this.drawCouteau();
         this.drawBrasGauche();
+        this.drawBrasDroit();
+
+        // les jambes
+        this.drawJambeGauche();
+        this.drawJambeDroite();
+
+        // la bouche
+        this.drawBouche(this.l);
 
         // restore
+        this.ctx.restore();
+    }
+
+    drawYeux() {
+        this.ctx.save();
+
+        this.drawCircleImmediat(20, 20, 10, "white");
+        this.drawCircleImmediat(23, 23, 5, "black");
+
+        this.drawCircleImmediat(80, 20, 10, "white");
+        this.drawCircleImmediat(77, 23, 5, "black");
+
+        // les sourcils
+        this.ctx.fillStyle = "black";
+        this.ctx.rotate(0.3);
+        this.ctx.fillRect(15, 2, 20, 10);
+        this.ctx.rotate(-0.6);
+        this.ctx.fillRect(60, 30, 20, 10);
+        this.ctx.rotate(0.3);
+
+        this.ctx.restore();
+    }
+
+    drawCouteau() {
+        this.ctx.save();
+
+        this.ctx.translate(-55, 12);
+        this.ctx.rotate(-0.3);
+
+        // manche
+        this.ctx.fillStyle = "grey";
+        this.ctx.fillRect(-10, 0, 50, 20);
+
+        // lame
+        this.ctx.fillStyle = "darkgrey";
+        this.ctx.beginPath();
+        this.ctx.moveTo(-10, -2);
+        this.ctx.lineTo(-80, -2);
+        this.ctx.lineTo(-10, 30);
+        this.ctx.closePath();
+        this.ctx.fill();
+
         this.ctx.restore();
     }
 
     drawBrasGauche() {
         this.ctx.save();
 
-        this.ctx.translate(-50, 50);
-        //this.ctx.rotate(0.7);
+        this.ctx.translate(-40, 60);
+        this.ctx.rotate(-0.3);
 
         // on dessine le bras gauche
-        this.ctx.fillStyle = "purple";
-        this.ctx.fillRect(-50, 0, 50, 10);
-
+        this.ctx.fillStyle = "brown";
+        this.ctx.fillRect(0, -50, 20, 50);
         // on dessine l'avant bras gauche
        this.drawAvantBrasGauche();
 
@@ -195,10 +259,118 @@ export default class Game {
 
     this.ctx.translate(0, 0);
 
-        this.ctx.fillStyle = "blue";
+        this.ctx.fillStyle = "brown";
         this.ctx.fillRect(0, 0, 50, 10);
 
         this.ctx.restore();
     }
 
+    drawBrasDroit() {
+        this.ctx.save();
+
+        this.ctx.translate(100, 50);
+        //this.ctx.rotate(-0.7);
+
+        // on dessine le bras droit
+        this.ctx.fillStyle = "brown";
+        this.ctx.fillRect(0, 0, 30, 10);
+
+        // on dessine l'avant bras droit
+        this.drawAvantBrasDroit();
+
+        this.ctx.restore();
+    }
+
+    drawAvantBrasDroit() {
+        this.ctx.save();
+
+        this.ctx.translate(30, 0);
+
+        this.ctx.fillStyle = "brown";
+        this.ctx.fillRect(0, 0, 20, 50);
+
+        this.ctx.restore();
+    }
+
+    drawJambeGauche() {
+        this.ctx.save();
+
+        this.ctx.translate(-30, 100);
+        this.ctx.fillStyle = "brown";
+        this.ctx.rotate(-0.3);
+        this.ctx.fillRect(0, 0, 70, 20);
+
+        this.ctx.translate(0, 20);
+        this.ctx.fillStyle = "brown";
+        this.ctx.rotate(-0.3);
+        this.ctx.fillRect(0, 0, 20, 50);
+
+        this.ctx.translate(20, 40);
+        this.ctx.fillStyle = "brown";
+        this.ctx.rotate(90);
+        this.ctx.fillRect(0, 0, 20, 50);
+
+        this.ctx.restore();
+    }
+
+    drawJambeDroite() {
+        this.ctx.save();
+
+        this.ctx.translate(70, 80);
+        this.ctx.fillStyle = "brown";
+        this.ctx.rotate(0.4);
+        this.ctx.fillRect(0, 0, 70, 20);
+
+        this.ctx.translate(51, 0);
+        this.ctx.fillStyle = "brown";
+        this.ctx.rotate(0.2);
+        this.ctx.fillRect(0, 0, 20, 50);
+
+        this.ctx.translate(10, 60);
+        this.ctx.fillStyle = "brown";
+        this.ctx.rotate(-90);
+        this.ctx.fillRect(0, 0, 20, 50);
+
+        this.ctx.restore();
+    }
+
+    drawBouche(l) {
+        this.ctx.save();
+
+        this.ctx.translate(50, 60);
+        this.ctx.arc(0, 0, 30, 0, Math.PI*2);
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
+
+        // les dents
+        this.ctx.translate(0, -20);
+
+        this.ctx.fillStyle = "white";
+
+        this.ctx.rotate(-1)
+        this.ctx.beginPath();
+        this.ctx.moveTo(-25, -20);
+        this.ctx.lineTo(-10, -20);
+        this.ctx.lineTo(-17.5, -10);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.rotate(1);
+
+        this.ctx.rotate(1);
+        this.ctx.beginPath();
+        this.ctx.moveTo(10, -20);
+        this.ctx.lineTo(25, -20);
+        this.ctx.lineTo(17.5, -10);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.rotate(-1);
+        
+        // la langue
+
+        this.ctx.translate(0, 30);
+        this.ctx.fillStyle = "pink";
+        this.ctx.fillRect(-10, 0, 20, l);
+
+        this.ctx.restore();
+    }
 }
