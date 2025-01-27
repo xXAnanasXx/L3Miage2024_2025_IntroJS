@@ -1,10 +1,9 @@
-import Cookie from "./Cookie.js";
+import Cookie from "./cookie.js";
 import { create2DArray } from "./utils.js";
 
 /* Classe principale du jeu, c'est une grille de cookies. Le jeu se joue comme
 Candy Crush Saga etc... c'est un match-3 game... */
 export default class Grille {
-  cookieSelectionnes = [];
   /**
    * Constructeur de la grille
    * @param {number} l nombre de lignes
@@ -15,6 +14,7 @@ export default class Grille {
     this.l = l;
 
     this.tabcookies = this.remplirTableauDeCookies(6)
+    this.cookiesSelectionnes = [];
   }
 
   /**
@@ -46,20 +46,14 @@ export default class Grille {
       // on récupère l'image correspondante
       let img = cookie.htmlImage;
 
+      img.grilleInstance = this;
+
       img.onclick = (event) => {
+        let grille = event.target.grilleInstance;
+
         console.log("On a cliqué sur la ligne " + ligne + " et la colonne " + colonne);
         //let cookieCliquee = this.getCookieFromLC(ligne, colonne);
         console.log("Le cookie cliqué est de type " + cookie.type);
-
-        // test : si on a cliqué sur un cookie déjà sélectionné
-        // on le désélectionne et on ne fait rien.
-        if(cookie.isSelectionnee()) {
-          cookie.deselectionnee();
-          // on la retire du tableau des cookies sélectionnés
-          this.cookieSelectionnes = [];
-          return;
-        }
-
         // highlight + changer classe CSS
         cookie.selectionnee();
 
@@ -67,30 +61,39 @@ export default class Grille {
         // si 0 on ajoute le cookie cliqué au tableau
         // si 1 on ajoute le cookie cliqué au tableau
         // et on essaie de swapper
-        let nbCookiesSelectionnes = this.cookieSelectionnes.length;
-        switch (nbCookiesSelectionnes) {
-          case 0:
-            // On mémorise la cookie courante
-            this.cookieSelectionnes.push(cookie);
-            break;
-          case 1:
-            this.cookieSelectionnes.push(cookie);
-            // Maintenant on a deux cookies selectionnees
-            // On va regarder si on peut les swapper
-            Cookie.swapCookies(this.cookieSelectionnes[0], this.cookieSelectionnes[1]);  
-            // dans tous les cas (swap ou pas) on vide le tableau
-            this.cookieSelectionnes = [];
-            break;
+        if (grille.cookiesSelectionnes.length == 0) {
+          grille.cookiesSelectionnes.push(cookie);
+        } else if (grille.cookiesSelectionnes.length == 1) {
+          if (grille.cookiesSelectionnes[0] != cookie) {
+            grille.cookiesSelectionnes.push(cookie);
+            Cookie.swapCookies(grille.cookiesSelectionnes[0], grille.cookiesSelectionnes[1]);
+          }
+          else {
+            cookie.deselectionnee();
+          }
+          grille.cookiesSelectionnes = [];
         }
       }
 
       // A FAIRE : ecouteur de drag'n'drop
       img.ondragstart = (event) => {
-        let cookieImage = event.target;
-        let l = cookieImage.dataset.ligne;
-        let c = cookieImage.dataset.colonne;
-        let t = this.tabcookies[l][c].type;
-        console.log(`dragstart sur cookie : t = ${t} l = ${l} c = ${c}`); 
+        console.log("dragstart");
+        event.dataTransfer.setData("draggedCookieL", cookie.ligne);
+        event.dataTransfer.setData("draggedCookieC", cookie.colonne);
+      }
+
+      img.ondragover = (event) => {
+        event.preventDefault();
+      }
+
+      img.ondrop = (event) => {
+        console.log("ondrop");
+        event.preventDefault();
+        let grille = event.target.grilleInstance;
+        let cookieDropped = grille.tabcookies[ligne][colonne];
+        console.log(event.dataTransfer.getData("draggedCookie"));
+        let cookieDragged = grille.tabcookies[event.dataTransfer.getData("draggedCookieL")][event.dataTransfer.getData("draggedCookieC")];
+        Cookie.swapCookies(cookieDropped, cookieDragged);
       }
 
       // on affiche l'image dans le div pour la faire apparaitre à l'écran.
